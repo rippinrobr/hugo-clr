@@ -7,4 +7,4 @@
 
 (defn -main [& args]
    (println (str "base-url: " base-url))
-   (hugo.parser/fetch-url base-url))
+   (println (hugoclr.parser/fetch-url base-url)))
