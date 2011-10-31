@@ -1,3 +1,7 @@
+;; I ran gacutil -i HtmlAgilityPack in the libs dir as administrator
+;; to load the dll into the gac for simplicity.
+(System.Reflection.Assembly/LoadWithPartialName "HtmlAgilityPack")
+
 (ns hugoclr.parser )
 
 (defstruct work :winner :title :author)
@@ -5,7 +9,8 @@
 
 (defn fetch-url [url]
   (println (str "retrieving " url "..."))
-  (let [res (.GetResponse (System.Net.WebRequest/Create url))
-        sr (new System.IO.StreamReader (.GetResponseStream res))        ]
-        (.ReadToEnd sr)))
- 
+  (.Load (new HtmlAgilityPack.HtmlWeb) url))
+        
+(defn get-award-links [url]
+  (.SelectNodes (.DocumentNode (hugoclr.parser/fetch-url url)) "//li[@class]/a[@href]"))
+     ;; "//li[@class]/a[@href]"))
