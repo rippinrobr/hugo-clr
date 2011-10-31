@@ -9,10 +9,8 @@
 (def base-url "http://www.thehugoawards.org/hugo-history/")
 
 (defn print-href-value [anchor]
-    (println (.Value (first (.Attributes anchor)))))
+    (.Value (first (.Attributes anchor))))
 
 (defn -main [& args]
    (println (str "base-url: " base-url))
-   (let [nodes (hugoclr.parser/get-award-links hugoclr/base-url)]
-     (println (apply str (map print-href-value nodes)))))
-     ;; (println (.Value (first (.Attributes (first nodes)))))))
+   (hugoclr.parser/get-awards base-url))  
