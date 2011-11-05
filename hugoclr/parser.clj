@@ -7,7 +7,7 @@
 (defstruct work :winner :title :author)
 (defstruct category :award :books :year)
 
-(defn- fetch-url [url]
+(defn fetch-url [url]
   "fetches the web page and converts it into a .NET object"
   (println (str "fetching " url ))
   (.Load (new HtmlAgilityPack.HtmlWeb) url))
@@ -28,13 +28,8 @@
   [li-node] (.InnerHtml (second (.ChildNodes li-node))))
 
 (defn get-category-heading 
-  [p-node] (.InnerHtml (first (.ChildNodes p-node))))
-
-(defn create-category-struct
-  [p-node] 
-    (let [ul (.NextSibling (.NextSibling p-node))
-          lis (filter #(= "li" (.OriginalName %)) (rest (.ChildNodes ul)))]
-           (struct category (get-category-heading p-node) (create-works-seq (seq lis)))));; "1111")))
+    [p-node] (.InnerHtml (first (.SelectNodes p-node "./strong"))))
+;;(filter #(not (nil? %)) (map #(.SelectNodes % "./strong") p-node)))
 
 (defn check-for-winner
   [li-node] 
@@ -45,18 +40,25 @@
 (defn create-works-seq 
   [lis] (map #(struct work (check-for-winner %) (get-work-title %) (get-work-author-and-publisher %)) (seq lis)))
 
+(defn create-category-struct
+  [p-node] 
+    (let [ul (.NextSibling (.NextSibling p-node))
+          lis (filter #(= "li" (.OriginalName %)) (rest (.ChildNodes ul)))]
+           (struct category (get-category-heading p-node) (create-works-seq (seq lis)))));; "1111")))
+
 (defn parse-awards-page 
+  "Gets all the book related sections of the web page. The first 5 items are book related."
   [award-url] 
-   ;; this will get the UL node: (.NextSibling (.NextSibling p-node))
-   ;; this will get the LI nodes: (def lis (filter #(= "li" (.OriginalName %)) (rest (.ChildNodes ul))))
-   ;; this will get the list contents: (.InnerHtml (.NextSibling (.NextSibling p-node)))
    ;; this will get the title of the work: (.InnerHtml (first (.ChildNodes (second (.ChildNodes ul)))))
    ;; this will get the author and publisher of the work:  (.InnerHtml (first (.ChildNodes (second (.ChildNodes ul)))))
-   (let [top-node (rest (get-html-elements award-url "//div[@id='content']/p[not(@class)]"))]
-     top-node))
+   ;; use  'Best Dramatic Presentation' as the cut off category name
+   (let [top-node (take 5 (get-html-elements award-url "//div[@id='content']/p[not(@class)]"))]
+     (map create-category-struct top-node)))
    
    
-(defn get-awards [url]
+(defn get-awards 
+  "gets all the links from the http://www.thehugoawards.org/hugo-history/ that lead to a awards page"
+  [url]
   (let [links (get-html-elements url "//li[@class]/a[@href]")
         award-links (filter #(not (nil? %)) (map validate-award-link links))]
          award-links))
