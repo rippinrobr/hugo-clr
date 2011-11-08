@@ -4,7 +4,7 @@
 
 (ns hugoclr.parser )
   
-(defstruct work :winner :title :author)
+(defstruct work :winner :title :author :publisher)
 (defstruct category :award :books :year)
 
 (defn fetch-url [url]
@@ -21,15 +21,24 @@
    winners."
   [url] (re-matches #".*hugo-history.*/.+" (.Value (first (.Attributes url)))))
 
+(defn get-year
+  [p-node] (apply str (take 4 (.InnerHtml (second (.ChildNodes (.ParentNode p-node)))))))
+
 (defn get-work-title
-  [li-node] (.InnerHtml (first (.ChildNodes li-node))))
+  [li-node]  (.InnerHtml (first (.ChildNodes li-node))))
 
 (defn get-work-author-and-publisher
-  [li-node] (.InnerHtml (second (.ChildNodes li-node))))
+  [li-node] 
+  ;; (println (nil? li-node))
+  (if (nil? (.ChildNodes li-node)) 
+    (.InnerHtml li-node)
+    (.InnerHtml (second (.ChildNodes li-node)))))
+                
+   ;; (let [[all author publisher] 
+   ;;   (re-matches #"\s+by\s*(.*)\s+\[(.*)\]" (.InnerHtml (second (.ChildNodes li-node))))] {:author author :publisher publisher}))
 
 (defn get-category-heading 
     [p-node] (.InnerHtml (first (.SelectNodes p-node "./strong"))))
-;;(filter #(not (nil? %)) (map #(.SelectNodes % "./strong") p-node)))
 
 (defn check-for-winner
   [li-node] 
@@ -38,22 +47,22 @@
         false))
 
 (defn create-works-seq 
-  [lis] (map #(struct work (check-for-winner %) (get-work-title %) (get-work-author-and-publisher %)) (seq lis)))
+  [lis] (map #(struct work (check-for-winner %) (get-work-title %) (get-work-author-and-publisher %) "") (seq lis)))
 
 (defn create-category-struct
   [p-node] 
     (let [ul (.NextSibling (.NextSibling p-node))
           lis (filter #(= "li" (.OriginalName %)) (rest (.ChildNodes ul)))]
-           (struct category (get-category-heading p-node) (create-works-seq (seq lis)))));; "1111")))
+     
+           (struct category (get-category-heading p-node) (create-works-seq (seq lis)) (get-year p-node))))
 
 (defn parse-awards-page 
   "Gets all the book related sections of the web page. The first 5 items are book related."
   [award-url] 
-   ;; this will get the title of the work: (.InnerHtml (first (.ChildNodes (second (.ChildNodes ul)))))
    ;; this will get the author and publisher of the work:  (.InnerHtml (first (.ChildNodes (second (.ChildNodes ul)))))
-   ;; use  'Best Dramatic Presentation' as the cut off category name
-   (let [top-node (take 5 (get-html-elements award-url "//div[@id='content']/p[not(@class)]"))]
-     (map create-category-struct top-node)))
+   (let [top-node (get-html-elements award-url "//div[@id='content']/p[not(@class)][2]")]
+     top-node))
+     ;;(map create-category-struct top-node)))
    
    
 (defn get-awards 
