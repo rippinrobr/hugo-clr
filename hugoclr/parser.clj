@@ -11,7 +11,11 @@
   "fetches the web page and converts it into a .NET object"
   (println (str "fetching " url ))
   (.Load (new HtmlAgilityPack.HtmlWeb) url))
-        
+
+(defn my-regex 
+  [pattern target-str]
+  (second (re-matches pattern target-str)))
+
 (defn get-html-elements [url xpath]
   "Gets all <a> that match the xpath and returns a collection of .NET objects"
   (.SelectNodes (.DocumentNode (hugoclr.parser/fetch-url url)) xpath))
@@ -31,11 +35,8 @@
   [li-node] 
   ;; (println (nil? li-node))
   (if (nil? (.ChildNodes li-node)) 
-    (.InnerHtml li-node)
+    (.InnerHtml li-node) 
     (.InnerHtml (second (.ChildNodes li-node)))))
-                
-   ;; (let [[all author publisher] 
-   ;;   (re-matches #"\s+by\s*(.*)\s+\[(.*)\]" (.InnerHtml (second (.ChildNodes li-node))))] {:author author :publisher publisher}))
 
 (defn get-category-heading 
     [p-node] (.InnerHtml (first (.SelectNodes p-node "./strong"))))
@@ -45,16 +46,22 @@
     (if (and (not (nil? (.Attributes li-node))) (> (.Count (.Attributes li-node)) 0)) 
         (= "winner" (.Value (first (.Attributes li-node)))) 
         false))
-
+(defn create-work-struct
+  [li-node]
+   (struct work (check-for-winner li-node) (get-work-title li-node) 
+                (my-regex #".*,\s+(.*)\s+[\(\[].*" (.InnerHtml li-node))
+                (my-regex #".*[\(\[](.*)[\)\]].*" (.InnerHtml li-node))))
+    
 (defn create-works-seq 
-  [lis] (map #(struct work (check-for-winner %) (get-work-title %) (get-work-author-and-publisher %) "") (seq lis)))
+  [lis] 
+  (map create-work-struct (seq lis)))
+  ;; (map #(struct work (check-for-winner %) (get-work-title %) (my-regex #"^,\s+(.*)\s+[\(\]].*" (get-work-author-and-publisher %)) "") (seq lis)))
 
 (defn create-category-struct
   [p-node] 
     (let [ul (.NextSibling (.NextSibling p-node))
           lis (filter #(= "li" (.OriginalName %)) (rest (.ChildNodes ul)))]
-     
-           (struct category (get-category-heading p-node) (create-works-seq (seq lis)) (get-year p-node))))
+          (struct category (get-category-heading p-node) (create-works-seq (seq lis)) (get-year p-node))))
 
 (defn parse-awards-page 
   "Gets all the book related sections of the web page. The first 5 items are book related."
