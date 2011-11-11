@@ -4,13 +4,13 @@
 
 (ns hugoclr
   (:gen-class)
-  (:use hugoclr.parser))
+  (:use hugoclr.parser)
+  (:use hugoclr.data.csv :as csv ))
 
 (def base-url "http://www.thehugoawards.org/hugo-history/")
 
-(defn print-href-value [anchor]
-    (.Value (first (.Attributes anchor))))
-
 (defn -main [& args]
    (println (str "base-url: " base-url))
-   (hugoclr.parser/get-awards base-url))  
+   (let [awards (hugoclr.parser/get-awards base-url)]
+     (csv/)
+

@@ -68,8 +68,8 @@
   [award-url] 
    ;; this will get the author and publisher of the work:  (.InnerHtml (first (.ChildNodes (second (.ChildNodes ul)))))
    (let [top-node (get-html-elements award-url "//div[@id='content']/p[not(@class)][2]")]
-     top-node))
-     ;;(map create-category-struct top-node)))
+     ;; top-node))
+     (map create-category-struct top-node)))
    
    
 (defn get-awards 
@@ -77,4 +77,5 @@
   [url]
   (let [links (get-html-elements url "//li[@class]/a[@href]")
         award-links (filter #(not (nil? %)) (map validate-award-link links))]
-         award-links))
+        ;; award-links))
+        (map parse-awards-page (take 2 award-links))))
