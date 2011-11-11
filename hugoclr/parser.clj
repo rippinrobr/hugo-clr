@@ -78,4 +78,4 @@
   (let [links (get-html-elements url "//li[@class]/a[@href]")
         award-links (filter #(not (nil? %)) (map validate-award-link links))]
         ;; award-links))
-        (map parse-awards-page (take 2 award-links))))
+        (map parse-awards-page (take 12 award-links))))
