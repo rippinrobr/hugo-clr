@@ -14,11 +14,12 @@
 
 (defn my-regex 
   [pattern target-str]
-  (second (re-matches pattern target-str)))
+  (last (re-matches pattern target-str)))
 
 (defn get-html-elements [url xpath]
   "Gets all <a> that match the xpath and returns a collection of .NET objects"
-  (.SelectNodes (.DocumentNode (hugoclr.parser/fetch-url url)) xpath))
+  (let [nodes (.SelectNodes (.DocumentNode (hugoclr.parser/fetch-url url)) xpath)]
+        nodes))
 
 (defn validate-award-link 
   "Filters out all non-award links so that I only retrieve pages that list nominees and 
@@ -33,7 +34,6 @@
 
 (defn get-work-author-and-publisher
   [li-node] 
-  ;; (println (nil? li-node))
   (if (nil? (.ChildNodes li-node)) 
     (.InnerHtml li-node) 
     (.InnerHtml (second (.ChildNodes li-node)))))
@@ -46,30 +46,28 @@
     (if (and (not (nil? (.Attributes li-node))) (> (.Count (.Attributes li-node)) 0)) 
         (= "winner" (.Value (first (.Attributes li-node)))) 
         false))
+
 (defn create-work-struct
   [li-node]
+   (println (.InnerHtml li-node))
    (struct work (check-for-winner li-node) (get-work-title li-node) 
-                (my-regex #".*,\s+(.*)\s+[\(\[].*" (.InnerHtml li-node))
+                (my-regex #".*</em>\s*(by|,)\s+(.*)\s+[\[\(].*" (.InnerHtml li-node))
                 (my-regex #".*[\(\[](.*)[\)\]].*" (.InnerHtml li-node))))
     
 (defn create-works-seq 
-  [lis] 
-  (map create-work-struct (seq lis)))
-  ;; (map #(struct work (check-for-winner %) (get-work-title %) (my-regex #"^,\s+(.*)\s+[\(\]].*" (get-work-author-and-publisher %)) "") (seq lis)))
-
+  [lis] (map create-work-struct (seq lis)))
+  
 (defn create-category-struct
-  [p-node] 
-    (let [ul (.NextSibling (.NextSibling p-node))
+  [ul] 
+    (let [p-node (.PreviousSibling (.PreviousSibling ul))
           lis (filter #(= "li" (.OriginalName %)) (rest (.ChildNodes ul)))]
           (struct category (get-category-heading p-node) (create-works-seq (seq lis)) (get-year p-node))))
 
 (defn parse-awards-page 
   "Gets all the book related sections of the web page. The first 5 items are book related."
   [award-url] 
-   ;; this will get the author and publisher of the work:  (.InnerHtml (first (.ChildNodes (second (.ChildNodes ul)))))
-   (let [top-node (get-html-elements award-url "//div[@id='content']/p[not(@class)][2]")]
-     ;; top-node))
-     (map create-category-struct top-node)))
+    (let [top-node (get-html-elements award-url "//div[@id='content']/ul")]
+       (map create-category-struct top-node)))
    
    
 (defn get-awards 
@@ -77,5 +75,4 @@
   [url]
   (let [links (get-html-elements url "//li[@class]/a[@href]")
         award-links (filter #(not (nil? %)) (map validate-award-link links))]
-        ;; award-links))
         (map parse-awards-page (take 12 award-links))))
