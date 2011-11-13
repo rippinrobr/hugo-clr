@@ -49,7 +49,6 @@
 
 (defn create-work-struct
   [li-node]
-   (println (.InnerHtml li-node))
    (struct work (check-for-winner li-node) (get-work-title li-node) 
                 (my-regex #".*</em>\s*(by|,)\s+(.*)\s+[\[\(].*" (.InnerHtml li-node))
                 (my-regex #".*[\(\[](.*)[\)\]].*" (.InnerHtml li-node))))
