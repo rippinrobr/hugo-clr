@@ -1,6 +1,7 @@
 ;; I ran gacutil -i HtmlAgilityPack in the libs dir as administrator
 ;; to load the dll into the gac for simplicity.
-(System.Reflection.Assembly/LoadWithPartialName "HtmlAgilityPack")
+;;(System.Reflection.Assembly/LoadWithPartialName "HtmlAgilityPack")
+(assembly-load-file "..\\libs\\HtmlAgilityPack.dll")
 
 (ns hugoclr
   (:gen-class)

@@ -1,10 +1,10 @@
 (ns hugoclr.data.csv)
 
-(defn clean 
+(defn- clean 
   [val]
     (.Replace (.Replace (.Replace (.Replace (.Replace val "," ";") "<em>" "") "</em>" "") "&#8217;" "'") "&amp;" "&"))
 
-(defn delimit
+(defn- delimit
   [year books]
   (map #(str year "," (:winner %) "," 
                       (clean (:title %)) "," 
