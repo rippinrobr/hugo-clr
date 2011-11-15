@@ -2,11 +2,8 @@
 ;; parser.clj
 ;; The code in this file is used to parse the HUGO award pages and create a
 ;; a record for each nonimee/winner
-;; 
-;; I ran gacutil -i HtmlAgilityPack in the libs dir as administrator
-;; to load the dll into the gac for simplicity.
 ;;---------------------------------------------------------------------------
-(System.Reflection.Assembly/LoadWithPartialName "HtmlAgilityPack")
+(assembly-load-from "..\\libs\\HtmlAgilityPack.dll")
 
 (ns hugoclr.parser )
  
