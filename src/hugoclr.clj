@@ -11,6 +11,7 @@
   (:use hugoclr.parser)
   (:use hugoclr.data.csv))
 
+;; the hugo site's page that lists all of the years they have data for
 (def base-url "http://www.thehugoawards.org/hugo-history/")
 
 (defn -main [& args]

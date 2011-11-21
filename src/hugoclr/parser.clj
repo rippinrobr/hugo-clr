@@ -78,7 +78,7 @@
   the category records are created."
   [award-url] 
     (let [top-node (get-html-elements award-url "//div[@id='content']/ul")]
-       (map create-category-record top-node)))
+      (map create-category-record top-node)))
     
 (defn get-awards 
   "gets all the links from the http://www.thehugoawards.org/hugo-history/ that lead to a awards page"
