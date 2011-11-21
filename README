@@ -1,0 +1,8 @@
+This branch is the code used in the "Hugo-clr: Parsing Web Pages with Clojure-clr and HtmlAgilityPack" 
+blog post.  It is a rehashing of code I wrote using Clojure on the JVM to help me investigate Clojure 
+in the CLR world.
+
+The code parses all of the 2000's Hugo Awards Pages and grabs the Best Novel category and writes them
+to a comma delimited text file.
+
+For more information checkout my blog at http://rob-rowe.blogspot.com/
